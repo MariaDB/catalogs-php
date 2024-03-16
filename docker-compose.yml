@@ -1,0 +1,13 @@
+services:
+    mariadb-catalogs:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: mariadb/catalogs:0.1
+        ports:
+            - '${DB_PORT:-3306}:3306'
+        volumes:
+            - 'mariadb:/datadir'
+volumes:
+    mariadb:
+        driver: local
