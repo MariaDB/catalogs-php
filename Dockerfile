@@ -6,7 +6,7 @@ RUN sed -e '/^# deb-src/s/^# //' -i /etc/apt/sources.list; \
     apt install -y build-essential libncurses5-dev gnutls-dev bison zlib1g-dev ccache; \
     mkdir build
 
-ADD maria-cat.tar.gz /build/
+ADD maria-cat-0.2.tar.gz /build/
 
 RUN cd build; \
     cmake . -DPLUGIN_COLUMNSTORE=NO -DPLUGIN_ROCKSDB=NO -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_GROONGA=NO -DPLUGIN_PARTITION=NO; \

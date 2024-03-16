@@ -3,7 +3,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        image: mariadb/catalogs:0.1
+        image: mariadb/catalogs:0.2
         ports:
             - '${DB_PORT:-3306}:3306'
         volumes:
