@@ -5,6 +5,12 @@ namespace Mariadb\CatalogsPHP;
 class Catalog{
 
     /**
+     * The connection to the MariaDB server.
+     * @var \PDO
+     */
+    private $connection;
+
+    /**
      * 
      * @param string $server
      * @param int $serverPort
@@ -13,6 +19,9 @@ class Catalog{
      * @return void
      */
     public function __construct( protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', private $dbPass = '') {
+        
+        $this->connection = new \PDO("mysql:host=$server;port=$serverPort", $dbUser, $dbPass);
+
         // Check the connection.
         // Check the maria DB version.
     }

@@ -10,7 +10,7 @@
     },
     "require": {
         "php": ">=8.0",
-        "ext-mysqli": "*"
+        "ext-pdo": "*"
     },
     "config": {
         "allow-plugins": {
