@@ -1,0 +1,22 @@
+{
+    "name": "mariadb/catalogs-php",
+    "description": "Communicate with MariaDB for collections",
+    "type": "library",
+    "license": "GPL-2.0 license",
+    "autoload": {
+        "psr-4": {
+            "Mariadb\\CatalogsPHP\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "8.0"
+        }
+    }
+}
