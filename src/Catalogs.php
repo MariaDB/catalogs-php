@@ -46,22 +46,23 @@ class Catalog{
      * @return int
      */
     public function getPort(string $catName) :int {
+        // TODO what query to run?
         return $port??0;
     }
 
     /**
      * Get all catalogs.
-     * @return void 
+     * @return int[] Named array with cat name and port.
      */
-    public function show($catName = null) {
+    public function show() :array{
         // Get all catalogs.
         // TODO what query to run?
         // Should contain catalog name and port.
-        // But also the DB's in the catalog?
-        if( $catName ) {
-            // Get only the details for catalog with the given name.
-        }
         // TODO what to return?
+        return [
+            'catalog1' => 3310,
+            'catalog2' => 3311,
+        ];
     }
 
     /**
@@ -72,11 +73,11 @@ class Catalog{
     public function drop( string $catName ) {
         // Drop the catalog.
         // TODO what query to run?
-        // Waht to return? Only throw exeecptions?
+        // On error throw exception?
+        return true;
     }
 
-
     public function alter() {
-        //our of scope
+        // Out of scope
     }
 }
