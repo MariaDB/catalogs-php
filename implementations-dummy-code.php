@@ -10,6 +10,5 @@ use Mariadb\CatalogsPHP\Catalog;
 $cat =  new Catalog();
 $catPort = $cat->create( 'wp_1' );
 // Using PDO, Create a DB and user in the collection using the $catPort.
-// Set DB_NAME with the name:$catPort
-
+// Set DB_NAME with the "name:$catPort"
 
