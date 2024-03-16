@@ -15,19 +15,19 @@ class Catalog{
     const MINIMAL_MARIA_VERSION = '11.0.2'; // This is too low, because this is a beta version we are devloping for.
 
     /**
-     * 
+     *
      * @param string $server
      * @param int $serverPort
      * @param string $dbUser
      * @param string $dbPass
      * @param array $options
      * @return void
-     * @throws PDOException 
-     * @throws Exception 
+     * @throws PDOException
+     * @throws Exception
      */
     public function __construct( protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', protected $dbPass = '', protected $server_options = null) {
         // Connect.
-        try { 
+        try {
             $this->connection = new \PDO("mysql:host=$server;port=$serverPort", $dbUser, $dbPass, $server_options);
         } catch (\PDOException $e) {
             throw $e;
@@ -44,39 +44,85 @@ class Catalog{
 
     /**
      * Create a new catalog
-     * 
+     *
      * @param string $catName The new Catalog name.
-     * @param string|null $catUser 
-     * @param string|null $catPassword 
-     * @param array|null $args 
-     * @return int 
+     * @param string|null $catUser
+     * @param string|null $catPassword
+     * @param array|null $args
+     * @return int
      */
     public function create( string $catName, string $catUser = null, string $catPassword=null, array $args=null): int{
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
         if (in_array($catName, array_keys($this->show()))) {
-            throw new Exception('Catalog name already exists.');
+            // Wesley: I commented out this and added a 'CREATE CATALOG IF NOT EXISTS' because we have to run this a second time, because of a MariaDB server segfault/crash the first time. See below.
+            // throw new Exception('Catalog name already exists.');
         }
 
         $scripts = [
             'src/create_catalog_sql/mysql_system_tables.sql',
             'src/create_catalog_sql/mysql_performance_tables.sql',
             'src/create_catalog_sql/mysql_system_tables_data.sql',
-            //'src/create_catalog_sql/maria_add_gis_sp.sql',
+            'src/create_catalog_sql/maria_add_gis_sp.sql',
             'src/create_catalog_sql/mysql_sys_schema.sql',
         ];
-        $this->connection->exec('CREATE CATALOG ' .$catName);
-        echo "using catalog";
+        $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' .$catName);
+        // echo "using catalog";
         $this->connection->exec('USE CATALOG ' . $catName);
 
-        $this->connection->exec('create database if not exists mysql');
+        $this->connection->exec('CREATE DATABASE IF NOT EXISTS mysql');
         $this->connection->exec('USE mysql');
 
         foreach ($scripts as $script) {
 
             echo "executing $script\n";
-            $this->connection->exec(file_get_contents($script));
+
+            $content = file_get_contents($script);
+
+            // Uncommented stuff were first tries.
+            // But apparently it suffices to just remove the DELIMITER statements.
+            // And replace the remaining $$ with ;
+
+            // $matches = [];
+            // preg_match_all('/DELIMITER\s+\$\$(.*?)\$\$.*?DELIMITER\s+;/s', $content, $matches);
+
+            // $index = 0;
+            // foreach ($matches[1] as $match) {
+            //     $sql = 'CREATE PROCEDURE TMP_PROCEDURE_' . ($index++) . '() BEGIN ' . $match . '; END;';
+            //     echo "sql = $sql";
+            //     $this->connection->exec($sql);
+            // }
+
+            // $index = 0;
+            // $content = preg_replace_callback(
+            //     '/(DELIMITER\s+\$\$(.*?)\$\$.*?DELIMITER\s+;)/s',
+            //     function ($matches) use (&$index) {
+            //         return 'CALL TMP_PROCEDURE_' . ($index++) . '();';
+            //     },
+            //     $content
+            // );
+
+            $content = preg_replace(
+                '/DELIMITER\s+(?:\$\$|;)/',
+                '',
+                $content
+            );
+
+            $content = preg_replace(
+                '/\$\$/',
+                ';',
+                $content
+            );
+
+            $this->connection->exec($content);
         }
+
+        // The problem is that this one will segfault the server the first time it is run.
+        // After server has restarted, it will work...
+        $this->connection->exec("CREATE USER 'test'@'%' IDENTIFIED BY 'test';");
+        $this->connection->exec("GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' IDENTIFIED BY 'test' WITH GRANT OPTION;");
+
+        $this->connection->exec('CREATE DATABASE testdb;');
 
         // Basicly run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
@@ -118,7 +164,7 @@ class Catalog{
     /**
      * Drop a catalog.
      * @param string $catName The catalog name.
-     * @return void 
+     * @return void
      */
     public function drop( string $catName ) : bool{
 
