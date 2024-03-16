@@ -10,20 +10,34 @@ class Catalog{
      */
     private $connection;
 
+    const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a beta version we are devloping for.
+
     /**
      * 
      * @param string $server
      * @param int $serverPort
      * @param string $dbUser
      * @param string $dbPass
+     * @param array $options
      * @return void
+     * @throws PDOException 
+     * @throws Exception 
      */
-    public function __construct( protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', private $dbPass = '') {
-        
-        $this->connection = new \PDO("mysql:host=$server;port=$serverPort", $dbUser, $dbPass);
+    public function __construct( protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', protected $dbPass = '', protected $server_options = null) {
+        // Connect.
+        try { 
+            $this->connection = new \PDO("mysql:host=$server;port=$serverPort", $dbUser, $dbPass, $server_options);
+        } catch (\PDOException $e) {
+            throw $e;
+        }
 
-        // Check the connection.
         // Check the maria DB version.
+        $version_query = $this->connection->query('SELECT VERSION()');
+        $version = $version_query->fetchColumn();
+
+        if (version_compare($version, self::MINIMAL_MARIA_VERSION, '<')) {
+            throw new Exception('The MariaDB version is too low. The minimal version is ' . self::MINIMAL_MARIA_VERSION);
+        }
     }
 
     /**
