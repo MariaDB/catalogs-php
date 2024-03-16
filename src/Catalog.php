@@ -94,10 +94,14 @@ class Catalog{
      * @param string $catName The catalog name.
      * @return void 
      */
-    public function drop( string $catName ) {
-        // Drop the catalog.
-        // TODO what query to run?
-        // On error throw exception?
+    public function drop( string $catName ) : bool{
+
+        $this->connection->query('DROP CATALOG ' .
+            $this->connection->quote($catName));
+
+        if ($this->connection->errorCode()) {
+            throw new Exception('Error dropping catalog: ' . $this->connection->errorInfo()[2]);
+        }
         return true;
     }
 
