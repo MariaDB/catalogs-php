@@ -43,7 +43,7 @@ class Catalog{
     /**
      * Create a new catalog
      * 
-     * @param string $catName The new Catalofg name.
+     * @param string $catName The new Catalog name.
      * @param string|null $catUser 
      * @param string|null $catPassword 
      * @param array|null $args 
@@ -53,14 +53,18 @@ class Catalog{
         // Check if shell scripts are allowed to execute.
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
-        if ($this->show($catName)) {
-            // Throw exeption.
+        if (in_array($catName, array_keys($this->show()))) {
+            throw new Exception('Catalog name already exists.');
         }
         // Basicly run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
 
-        $port = $this->getPort($catName);
-        return $port;
+        $cmd = 'mariadb-install-db --catalogs="' . escapeshellarg($catName) .
+            '" --catalog-user=' . escapeshellarg($catUser) .
+            ' --catalog-password=' . escapeshellarg($catPassword);
+        system($cmd);
+
+        return $this->getPort($catName);
     }
 
     /**
@@ -69,7 +73,7 @@ class Catalog{
      * @return int
      */
     public function getPort(string $catName) :int {
-        // TODO what query to run?
+        // TODO wait for the functionality to be implemented in the server.
         return $port??0;
     }
 
