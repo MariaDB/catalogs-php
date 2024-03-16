@@ -63,15 +63,16 @@ class Catalog{
      * Get all catalogs.
      * @return int[] Named array with cat name and port.
      */
-    public function show() :array{
-        // Get all catalogs.
-        // TODO what query to run?
-        // Should contain catalog name and port.
-        // TODO what to return?
-        return [
-            'catalog1' => 3310,
-            'catalog2' => 3311,
-        ];
+    public function show() :array
+    {
+        $catalogs = [];
+        $results = $this->connection->query('SHOW CATALOGS');
+        foreach ($results as $row)
+        {
+            // For now, we just return the default port for all catalogs.
+            $catalogs[$row['name']] = $this->serverPort;
+        }
+        return $catalogs;
     }
 
     /**
