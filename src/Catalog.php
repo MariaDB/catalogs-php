@@ -2,6 +2,8 @@
 
 namespace Mariadb\CatalogsPHP;
 
+use PDOException;
+
 class Catalog{
 
     /**
@@ -10,7 +12,7 @@ class Catalog{
      */
     private $connection;
 
-    const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a beta version we are devloping for.
+    const MINIMAL_MARIA_VERSION = '11.0.2'; // This is too low, because this is a beta version we are devloping for.
 
     /**
      * 
@@ -50,19 +52,39 @@ class Catalog{
      * @return int 
      */
     public function create( string $catName, string $catUser = null, string $catPassword=null, array $args=null): int{
-        // Check if shell scripts are allowed to execute.
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
         if (in_array($catName, array_keys($this->show()))) {
             throw new Exception('Catalog name already exists.');
         }
+
+        $scripts = [
+            'src/create_catalog_sql/mysql_system_tables.sql',
+            'src/create_catalog_sql/mysql_performance_tables.sql',
+            'src/create_catalog_sql/mysql_system_tables_data.sql',
+            //'src/create_catalog_sql/maria_add_gis_sp.sql',
+            'src/create_catalog_sql/mysql_sys_schema.sql',
+        ];
+        $this->connection->exec('CREATE CATALOG ' .$catName);
+        echo "using catalog";
+        $this->connection->exec('USE CATALOG ' . $catName);
+
+        $this->connection->exec('create database if not exists mysql');
+        $this->connection->exec('USE mysql');
+
+        foreach ($scripts as $script) {
+
+            echo "executing $script\n";
+            $this->connection->exec(file_get_contents($script));
+        }
+
         // Basicly run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
 
-        $cmd = 'mariadb-install-db --catalogs="' . escapeshellarg($catName) .
+        /*$cmd = 'mariadb-install-db --catalogs="' . escapeshellarg($catName) .
             '" --catalog-user=' . escapeshellarg($catUser) .
             ' --catalog-password=' . escapeshellarg($catPassword);
-        system($cmd);
+        system($cmd);*/
 
         return $this->getPort($catName);
     }
@@ -88,7 +110,7 @@ class Catalog{
         foreach ($results as $row)
         {
             // For now, we just return the default port for all catalogs.
-            $catalogs[$row['name']] = $this->serverPort;
+            $catalogs[$row['Catalog']] = $this->serverPort;
         }
         return $catalogs;
     }
