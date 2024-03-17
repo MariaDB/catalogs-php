@@ -13,7 +13,8 @@
         "ext-pdo": "*"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "3.*"
+        "squizlabs/php_codesniffer": "3.*",
+        "phpunit/phpunit": "^9.6"
     },
     "scripts": {
         "phpcbf": "@php vendor/bin/phpcbf",

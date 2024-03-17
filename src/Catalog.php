@@ -36,6 +36,7 @@ class Catalog
      * @param string     $dbUser    The username for the database login. Default is 'root'.
      * @param string     $dbPass    The password for the database login. Default is an empty string.
      * @param array|null $dbOptions Optional. An array of options for the server connection.
+     * @param \PDO|null  $pdo       Optional. An existing PDO connection to use. Default is null.
      *
      * @throws PDOException If a PDO error occurs during the connection attempt.
      * @throws Exception    If a general error occurs during instantiation.
@@ -45,10 +46,15 @@ class Catalog
         protected int $dbPort=3306,
         protected string $dbUser='root',
         protected string $dbPass='',
-        protected ?array $dbOptions=null
+        protected ?array $dbOptions=null,
+        protected ?\PDO $pdo = null
     ) {
         // Connect.
         try {
+            if($pdo !== null) {
+                $this->connection = $pdo;
+                return;
+            }
             // Corrected to use the updated parameter names.
             $this->connection = new \PDO(
                 "mysql:host=$dbHost;port=$dbPort",
@@ -71,7 +77,6 @@ class Catalog
         }
 
     }
-
 
     /**
      * Create a new catalog
