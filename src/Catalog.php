@@ -166,12 +166,21 @@ class Catalog{
      */
     public function drop( string $catName ) : bool{
 
-        $this->connection->query('DROP CATALOG ' .
-            $this->connection->quote($catName));
+        try {
+            // enter the catalog
+            $this->connection->exec('USE CATALOG ' . $catName);
 
-        if ($this->connection->errorCode()) {
-            throw new Exception('Error dropping catalog: ' . $this->connection->errorInfo()[2]);
+            // drop mysql, sys and performance_schema
+            $this->connection->exec('DROP DATABASE IF EXISTS mysql');
+            $this->connection->exec('DROP DATABASE IF EXISTS sys');
+            $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
+
+            // drop the catalog
+            $this->connection->exec('DROP CATALOG ' . $catName);
+        } catch (\PDOException $e) {
+            throw new \Exception('Error dropping catalog: ' . $e->getMessage());
         }
+
         return true;
     }
 
