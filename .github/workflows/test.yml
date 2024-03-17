@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    name: Check code style
+    name: Check code style and run tests
 
     steps:
       - name: Checkout code
@@ -26,3 +26,6 @@ jobs:
 
       - name: Check code style
         run: composer phpcs
+
+      - name: Run tests
+        run: ./vendor/bin/phpunit
