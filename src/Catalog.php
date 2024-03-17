@@ -178,24 +178,14 @@ class Catalog{
      */
     public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost = 'localhost'): void
     {
+        $this->connection->exec("USE CATALOG {$catalog}");
+        $this->connection->exec("USE mysql");
 
-        $this->connection->exec("USE CATALOG ". $catalog);
-        try {
-            $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
-        }
-        catch (\PDOException $e) {
-            echo "Caught exception: " . $e->getMessage() . "\n";
-            // Sometimes, the server goes away for a few seconds (bug in mariadb)
-            sleep(10);
+        $this->connection->prepare("INSERT IGNORE INTO global_priv (Host,User,Priv) VALUES ('%','{$this->dbUser}','{\"access\":18446744073709551615}')")->execute([]);
 
-            // Connect.
-            try {
-                $this->connection = new \PDO("mysql:host={$this->server};port={$this->serverPort}", $this->dbUser, $this->dbPass, $this->server_options);
-                $this->connection->exec("USE CATALOG {$catalog}");
-            } catch (\PDOException $e) {
-                throw $e;
-            }
-        }
-        $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? IDENTIFIED BY  ? WITH GRANT OPTION;")->execute([$userName, $authHost,$password]);
+        $this->connection = new \PDO("mysql:host={$this->server};port={$this->serverPort};dbname={$catalog}.mysql", $this->dbUser, $this->dbPass, $this->server_options);
+
+        // $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
+        // $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? IDENTIFIED BY  ? WITH GRANT OPTION;")->execute([$userName, $authHost,$password]);
     }
 }
