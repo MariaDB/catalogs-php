@@ -91,7 +91,7 @@ class Catalog
     public function create(string $catName): int
     {
         // Check if the Catalog name is valid.
-        if (in_array($catName, array_keys($this->show())) === true) {
+        if (in_array($catName, array_keys($this->list())) === true) {
             throw new Exception('Catalog name already exists.');
         }
 
@@ -162,7 +162,7 @@ class Catalog
      *
      * @return int[] Named array with cat name and port.
      */
-    public function show(): array
+    public function list(): array
     {
         $catalogs = [];
         $results  = $this->connection->query('SHOW CATALOGS');
