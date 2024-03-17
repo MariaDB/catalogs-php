@@ -33,7 +33,7 @@ trap 'echo "${RED}* Script halted (user pressed CTRL-C?)${NC}"; exit' SIGINT SIG
 
 echo "${GREEN}* Load saved Docker containers${NC}"
 echo
-docker load --input mariadb-catalogs-docker-0.2.tar.gz
+docker load --input mariadb-catalogs-docker-0.3.tar.gz
 echo
 
 echo "${GREEN}* Install and start Docker containers${NC}"
@@ -57,15 +57,15 @@ echo "${GREEN}* Setup test users${NC}"
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"CREATE USER 'root'@'%' IDENTIFIED BY 'rootpassword';\""
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'rootpassword' WITH GRANT OPTION;\""
 
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; CREATE USER 'user1'@'%' IDENTIFIED BY 'password';\""
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; GRANT ALL PRIVILEGES ON *.* TO 'user1'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; GRANT ALL PRIVILEGES ON *.* TO 'user1'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat1.mysql -e \"CREATE USER 'user1'@'%' IDENTIFIED BY 'password';\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat1.mysql -e \"GRANT ALL PRIVILEGES ON *.* TO 'user1'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat1.mysql -e \"GRANT ALL PRIVILEGES ON *.* TO 'user1'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
 
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat2; CREATE USER 'user2'@'%' IDENTIFIED BY 'password';\""
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat2; GRANT ALL PRIVILEGES ON *.* TO 'user2'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat2; GRANT ALL PRIVILEGES ON *.* TO 'user2'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat2.mysql -e \"CREATE USER 'user2'@'%' IDENTIFIED BY 'password';\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat2.mysql -e \"GRANT ALL PRIVILEGES ON *.* TO 'user2'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat2.mysql -e \"GRANT ALL PRIVILEGES ON *.* TO 'user2'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
 
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"FLUSH PRIVILEGES;\""
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; FLUSH PRIVILEGES;\""
-docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat2; FLUSH PRIVILEGES;\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat1.mysql -e \"FLUSH PRIVILEGES;\""
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb cat2.mysql -e \"FLUSH PRIVILEGES;\""
 echo

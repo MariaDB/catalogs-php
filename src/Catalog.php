@@ -2,6 +2,8 @@
 
 namespace Mariadb\CatalogsPHP;
 
+use PDOException;
+
 /**
  * Manage MariaDB catalogs via php.
  *
@@ -17,9 +19,8 @@ class Catalog
      */
     private $connection;
 
-    public const MINIMAL_MARIA_VERSION = '11.0.3';
     // This is too low, because this is a beta version we are developing for.
-
+    public const MINIMAL_MARIA_VERSION = '11.0.2';
 
     /**
      * Class constructor.
@@ -76,32 +77,56 @@ class Catalog
      * Create a new catalog
      *
      * @param string      $catName     The new Catalog name.
-     * @param string|null $catUser     The Catalog user
-     * @param string|null $catPassword The Catalog user password
-     * @param array|null  $args        Additional args
      *
      * @return int
      */
-    public function create(
-        string $catName,
-        string $catUser=null,
-        string $catPassword=null,
-        array $args=null
-    ): int {
-        // Check if shell scripts are allowed to execute.
-        // Might be restricted by the server.
+    public function create(string $catName): int
+    {
         // Check if the Catalog name is valid.
         if (in_array($catName, array_keys($this->show())) === true) {
             throw new Exception('Catalog name already exists.');
         }
 
-        // Basically run:
-        // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
-        $cmd = 'mariadb-install-db --catalogs="'.escapeshellarg($catName).'" --catalog-user='.escapeshellarg($catUser).' --catalog-password='.escapeshellarg($catPassword);
-        system($cmd);
+        $root_privileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
+
+        $scripts = [
+            'src/create_catalog_sql/mysql_system_tables.sql',
+            'src/create_catalog_sql/mysql_performance_tables.sql',
+            'src/create_catalog_sql/mysql_system_tables_data.sql',
+            'src/create_catalog_sql/maria_add_gis_sp.sql',
+            'src/create_catalog_sql/mysql_sys_schema.sql',
+        ];
+        $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' .$catName);
+        $this->connection->exec('USE CATALOG ' . $catName);
+
+        $this->connection->exec('CREATE DATABASE IF NOT EXISTS mysql');
+        $this->connection->exec('USE mysql');
+
+        foreach ($scripts as $script) {
+            $content = file_get_contents($script);
+
+            $content = preg_replace(
+                '/DELIMITER\s+(?:\$\$|;)/',
+                '',
+                $content
+            );
+
+            $content = preg_replace(
+                '/\$\$/',
+                ';',
+                $content
+            );
+
+            $this->connection->exec($content);
+        }
+
+        if ($root_privileges->rowCount() > 0) {
+            foreach ($root_privileges as $privilege) {
+                $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$privilege['Host']}', '{$privilege['User']}', '{$privilege['Priv']}');");
+            }
+        }
 
         return $this->getPort($catName);
-
     }
 
 
@@ -131,7 +156,7 @@ class Catalog
         $results  = $this->connection->query('SHOW CATALOGS');
         foreach ($results as $row) {
             // For now, we just return the default port for all catalogs.
-            $catalogs[$row['name']] = $this->dbPort;
+            $catalogs[$row['Catalog']] = $this->dbPort;
         }
 
         return $catalogs;
@@ -155,10 +180,27 @@ class Catalog
             'DROP CATALOG '.$this->connection->quote($catName)
         );
 
-        if ($this->connection->errorCode() === true) {
-            throw new Exception(
-                'Error dropping catalog: '.$this->connection->errorInfo()[2]
-            );
+        try {
+            // enter the catalog
+            $this->connection->exec('USE CATALOG ' . $catName);
+
+            // check if there are any tables besides mysql, sys, performance_schema and information_schema
+            $tables = $this->connection->query('SHOW DATABASES');
+            foreach ($tables as $table) {
+                if (!in_array($table['Database'], ['mysql', 'sys', 'performance_schema', 'information_schema'])) {
+                    throw new \Exception('Catalog is not empty');
+                }
+            }
+
+            // drop mysql, sys and performance_schema
+            $this->connection->exec('DROP DATABASE IF EXISTS mysql');
+            $this->connection->exec('DROP DATABASE IF EXISTS sys');
+            $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
+
+            // drop the catalog
+            $this->connection->exec('DROP CATALOG ' . $catName);
+        } catch (\PDOException $e) {
+            throw new \Exception('Error dropping catalog: ' . $e->getMessage());
         }
 
         return true;
@@ -179,5 +221,17 @@ class Catalog
 
     }
 
+    /**
+     * @return void
+     */
+    public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost = 'localhost'): void
+    {
+        $this->connection->exec("USE CATALOG {$catalog}");
+        $this->connection->exec("USE mysql");
 
+        $this->connection = new \PDO("mysql:host={$this->dbHost};port={$this->dbPort};dbname={$catalog}.mysql", $this->dbUser, $this->dbPass, $this->dbOptions);
+
+        $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
+        $this->connection->prepare("GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;")->execute([$userName, $authHost,$password]);
+    }
 }
