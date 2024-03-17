@@ -11,26 +11,31 @@ class Catalog{
 
     /**
      * The connection to the MariaDB server.
+     *
      * @var \PDO
      */
     private $connection;
 
-    const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a pre-alpha version we are devloping for.
+    public const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a beta version we are developing for.
 
     /**
-     * 
-     * @param string $server
-     * @param int $serverPort
-     * @param string $dbUser
-     * @param string $dbPass
-     * @param array $options
+     * Class constructor
+     *
+     * @param string $server         server
+     * @param int    $serverPort     port
+     * @param string $dbUser         user
+     * @param string $dbPass         password
+     * @param array  $server_options options
+     *
      * @return void
-     * @throws PDOException 
-     * @throws Exception 
+     *
+     * @throws PDOException
+     * @throws Exception
      */
-    public function __construct( protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', protected $dbPass = '', protected $server_options = null) {
+    public function __construct(protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', protected $dbPass = '', protected $server_options = null)
+    {
         // Connect.
-        try { 
+        try {
             $this->connection = new \PDO("mysql:host=$server;port=$serverPort", $dbUser, $dbPass, $server_options);
         } catch (\PDOException $e) {
             throw $e;
@@ -47,21 +52,23 @@ class Catalog{
 
     /**
      * Create a new catalog
-     * 
-     * @param string $catName The new Catalog name.
-     * @param string|null $catUser 
-     * @param string|null $catPassword 
-     * @param array|null $args 
-     * @return int 
+     *
+     * @param string      $catName     The new Catalog name.
+     * @param string|null $catUser     The Catalog user
+     * @param string|null $catPassword The Catalog user password
+     * @param array|null  $args        Additional args
+     *
+     * @return int
      */
-    public function create( string $catName, string $catUser = null, string $catPassword=null, array $args=null): int{
+    public function create(string $catName, string $catUser = null, string $catPassword = null, array $args = null): int
+    {
         // Check if shell scripts are allowed to execute.
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
         if (in_array($catName, array_keys($this->show()))) {
             throw new Exception('Catalog name already exists.');
         }
-        // Basicly run:
+        // Basically run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
 
         $cmd = 'mariadb-install-db --catalogs="' . escapeshellarg($catName) .
@@ -74,24 +81,27 @@ class Catalog{
 
     /**
      * Get the port of a catalog.
-     * @param string $catName Tha catalog name.
+     *
+     * @param string $catName The catalog name.
+     *
      * @return int
      */
-    public function getPort(string $catName) :int {
-        // TODO wait for the functionality to be implemented in the server.
-        return $port??0;
+    public function getPort(string $catName): int
+    {
+        // TODO: wait for the functionality to be implemented in the server.
+        return $port ?? 0;
     }
 
     /**
      * Get all catalogs.
+     *
      * @return int[] Named array with cat name and port.
      */
-    public function show() :array
+    public function show(): array
     {
         $catalogs = [];
         $results = $this->connection->query('SHOW CATALOGS');
-        foreach ($results as $row)
-        {
+        foreach ($results as $row) {
             // For now, we just return the default port for all catalogs.
             $catalogs[$row['name']] = $this->serverPort;
         }
@@ -100,13 +110,16 @@ class Catalog{
 
     /**
      * Drop a catalog.
+     *
      * @param string $catName The catalog name.
-     * @return void 
+     *
+     * @return void
      */
-    public function drop( string $catName ) : bool{
-
-        $this->connection->query('DROP CATALOG ' .
-            $this->connection->quote($catName));
+    public function drop(string $catName): bool
+    {
+        $this->connection->query(
+            'DROP CATALOG ' . $this->connection->quote($catName)
+        );
 
         if ($this->connection->errorCode()) {
             throw new Exception('Error dropping catalog: ' . $this->connection->errorInfo()[2]);
