@@ -124,6 +124,9 @@ class Catalog
      * @param string $catName The catalog name.
      *
      * @return void
+     *
+     * @throws PDOException If a PDO error occurs during the catalog drop attempt.
+     * @throws Exception    If a general error occurs during catalog drop.
      */
     public function drop(string $catName): bool
     {
