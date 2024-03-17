@@ -52,17 +52,17 @@ class Catalog
     ) {
         // Connect.
         try {
-            if($pdo !== null) {
+            if ($pdo !== null) {
                 $this->connection = $pdo;
                 return;
+            } else {
+                $this->connection = new \PDO(
+                    "mysql:host=$dbHost;port=$dbPort",
+                    $dbUser,
+                    $dbPass,
+                    $dbOptions
+                );
             }
-            // Corrected to use the updated parameter names.
-            $this->connection = new \PDO(
-                "mysql:host=$dbHost;port=$dbPort",
-                $dbUser,
-                $dbPass,
-                $dbOptions
-            );
         } catch (\PDOException $e) {
             throw $e;
         }
