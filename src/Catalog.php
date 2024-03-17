@@ -46,7 +46,12 @@ class Catalog
         // Connect.
         try {
             // Corrected to use the updated parameter names.
-            $this->connection = new \PDO("mysql:host=$db_host;port=$db_port", $db_user, $db_pass, $db_options);
+            $this->connection = new \PDO(
+                "mysql:host=$db_host;port=$db_port",
+                $db_user,
+                $db_pass,
+                $db_options
+            );
         } catch (\PDOException $e) {
             throw $e;
         }
@@ -56,7 +61,10 @@ class Catalog
         $version = $version_query->fetchColumn();
 
         if (version_compare($version, self::MINIMAL_MARIA_VERSION, '<')) {
-            throw new Exception('The MariaDB version is too low. The minimal version is ' . self::MINIMAL_MARIA_VERSION);
+            throw new Exception(
+                'The MariaDB version is too low. The minimal version is ' .
+                self::MINIMAL_MARIA_VERSION
+            );
         }
     }
 
@@ -70,8 +78,12 @@ class Catalog
      *
      * @return int
      */
-    public function create(string $catName, string $catUser = null, string $catPassword = null, array $args = null): int
-    {
+    public function create(
+        string $catName,
+        string $catUser = null,
+        string $catPassword = null,
+        array $args = null
+    ): int {
         // Check if shell scripts are allowed to execute.
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
@@ -135,7 +147,10 @@ class Catalog
         );
 
         if ($this->connection->errorCode()) {
-            throw new Exception('Error dropping catalog: ' . $this->connection->errorInfo()[2]);
+            throw new Exception(
+                'Error dropping catalog: ' .
+                $this->connection->errorInfo()[2]
+            );
         }
         return true;
     }
