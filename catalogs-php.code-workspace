@@ -1,16 +1,15 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": ".",
+			/*"phpcs.enable": true,
+			"phpcs.standard": "WordPress",
+			"phpcs.executablePath": "./vendor/bin/phpcs",
+			"phpcs.showWarnings": true,
+			"phpcs.composerJsonPath": "composer.json",
+			"phpcs.errorSeverity": 5,
+			"php.suggest.basic": true
+			*/
 		}
-	],
-	"settings": {
-		"phpcs.enable": true,
-		"phpcs.standard": "WordPress",
-		"phpcs.executablePath": "./vendor/bin/phpcs",
-		"phpcs.showWarnings": true,
-		"phpcs.composerJsonPath": "composer.json",
-		"phpcs.errorSeverity": 5,
-		"php.suggest.basic": true
-	}
+	]
 }
