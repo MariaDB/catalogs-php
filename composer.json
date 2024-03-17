@@ -1,6 +1,6 @@
 {
     "name": "mariadb/catalogs-php",
-    "description": "Communicate with MariaDB for collections",
+    "description": "Communicate with MariaDB for catalogs",
     "type": "library",
     "license": "GPL-2.0-or-later",
     "autoload": {
