@@ -1,3 +1,6 @@
 /vendor/
 composer.lock
 .idea
+*.sql
+*.tar.gz
+*.zip
