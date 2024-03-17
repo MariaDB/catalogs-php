@@ -179,7 +179,7 @@ class Catalog{
     public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost = 'localhost'): void
     {
 
-        $this->connection->prepare("USE CATALOG ". $catalog);
+        $this->connection->exec("USE CATALOG ". $catalog);
         try {
             $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
         }
@@ -187,6 +187,14 @@ class Catalog{
             echo "Caught exception: " . $e->getMessage() . "\n";
             // Sometimes, the server goes away for a few seconds (bug in mariadb)
             sleep(10);
+
+            // Connect.
+            try {
+                $this->connection = new \PDO("mysql:host={$this->server};port={$this->serverPort}", $this->dbUser, $this->dbPass, $this->server_options);
+                $this->connection->exec("USE CATALOG {$catalog}");
+            } catch (\PDOException $e) {
+                throw $e;
+            }
         }
         $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? WITH GRANT OPTION;")->execute([$userName, $authHost]);
     }

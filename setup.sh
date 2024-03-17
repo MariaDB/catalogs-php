@@ -57,7 +57,8 @@ echo "${GREEN}* Setup test users${NC}"
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"CREATE USER 'root'@'%' IDENTIFIED BY 'rootpassword';\""
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'rootpassword' WITH GRANT OPTION;\""
 
-
+docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; CREATE USER 'user1'@'%' IDENTIFIED BY 'password';\""
+sleep 3 # needed because of server crash here
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; GRANT ALL PRIVILEGES ON *.* TO 'user1'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
 docker compose exec -w /usr/local/mysql mariadb-catalogs bash -c "./bin/mariadb -e \"USE CATALOG cat1; GRANT ALL PRIVILEGES ON *.* TO 'user1'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;\""
 

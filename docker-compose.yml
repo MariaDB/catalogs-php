@@ -4,6 +4,7 @@ services:
             context: .
             dockerfile: Dockerfile
         image: mariadb/catalogs:0.2
+        restart: unless-stopped
         ports:
             - '${DB_PORT:-3306}:3306'
         volumes:
