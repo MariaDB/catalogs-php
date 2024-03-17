@@ -2,7 +2,7 @@
     "name": "mariadb/catalogs-php",
     "description": "Communicate with MariaDB for collections",
     "type": "library",
-    "license": "GPL-2.0 license",
+    "license": "GPL-2.0-or-later",
     "autoload": {
         "psr-4": {
             "Mariadb\\CatalogsPHP\\": "src/"
