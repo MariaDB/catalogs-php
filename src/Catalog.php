@@ -2,6 +2,11 @@
 
 namespace Mariadb\CatalogsPHP;
 
+/**
+ * Manage MariaDB catalogs via php.
+ *
+ * @package Mariadb\CatalogsPHP
+ */
 class Catalog{
 
     /**
@@ -10,7 +15,7 @@ class Catalog{
      */
     private $connection;
 
-    const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a beta version we are devloping for.
+    const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a pre-alpha version we are devloping for.
 
     /**
      * 
@@ -109,7 +114,13 @@ class Catalog{
         return true;
     }
 
-    public function alter() {
-        // Out of scope
+    /**
+     * This is out of scope, that's why it's private.
+     * And it should be made public when implemented.
+     * 
+     * @return void 
+     */
+    private function alter() {
+        // TODO implement the ALTER CATALOG command.
     }
 }
