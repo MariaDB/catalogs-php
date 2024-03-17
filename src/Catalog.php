@@ -55,10 +55,9 @@ class Catalog{
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
         if (in_array($catName, array_keys($this->show()))) {
-            // Wesley: I commented out this and added a 'CREATE CATALOG IF NOT EXISTS' because we have to run this a second time, because of a MariaDB server segfault/crash the first time. See below.
-            // throw new Exception('Catalog name already exists.');
+            throw new Exception('Catalog name already exists.');
         }
-        $root_privileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE user='{$this->dbUser}';");
+        $root_privileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
 
         $scripts = [
             'src/create_catalog_sql/mysql_system_tables.sql',
@@ -116,15 +115,6 @@ class Catalog{
             );
 
             $this->connection->exec($content);
-
-
-            if ($root_privileges->rowCount() > 0)
-            {
-                foreach ($root_privileges as $privilege)
-                {
-                    $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$privilege['Host']}', '{$privilege['User']}', '{$privilege['Priv']}');");
-                }
-            }
         }
         // Basicly run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
@@ -133,6 +123,12 @@ class Catalog{
             '" --catalog-user=' . escapeshellarg($catUser) .
             ' --catalog-password=' . escapeshellarg($catPassword);
         system($cmd);*/
+
+        if ($root_privileges->rowCount() > 0) {
+            foreach ($root_privileges as $privilege) {
+                $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$privilege['Host']}', '{$privilege['User']}', '{$privilege['Priv']}');");
+            }
+        }
 
         return $this->getPort($catName);
     }
@@ -191,11 +187,9 @@ class Catalog{
         $this->connection->exec("USE CATALOG {$catalog}");
         $this->connection->exec("USE mysql");
 
-        //$this->connection->prepare("INSERT IGNORE INTO global_priv (Host,User,Priv) VALUES ('%','{$this->dbUser}','{\"access\":18446744073709551615}')")->execute([]);
-
         $this->connection = new \PDO("mysql:host={$this->server};port={$this->serverPort};dbname={$catalog}.mysql", $this->dbUser, $this->dbPass, $this->server_options);
 
-        // $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
-        // $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? IDENTIFIED BY  ? WITH GRANT OPTION;")->execute([$userName, $authHost,$password]);
+        $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
+        $this->connection->prepare("GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;")->execute([$userName, $authHost,$password]);
     }
 }

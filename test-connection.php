@@ -1,6 +1,10 @@
 <?php
 
-$db = mysqli_connect('127.0.0.1', 'test', 'test', 'catalog20.testdb', 3306);
+$db = mysqli_connect('127.0.0.1', 'admin', 'adminpassword', 'catalog46.mysql', 3306);
+mysqli_query($db, 'CREATE DATABASE foobar');
+$db->close();
+
+$db = mysqli_connect('127.0.0.1', 'admin', 'adminpassword', 'catalog46.foobar', 3306);
 print_r($db);
 
 mysqli_query($db, 'CREATE TABLE IF NOT EXISTS test_table (num INT, name VARCHAR(255))');
