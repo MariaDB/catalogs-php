@@ -170,6 +170,14 @@ class Catalog{
             // enter the catalog
             $this->connection->exec('USE CATALOG ' . $catName);
 
+            // check if there are any tables besides mysql, sys, performance_schema and information_schema
+            $tables = $this->connection->query('SHOW DATABASES');
+            foreach ($tables as $table) {
+                if (!in_array($table['Database'], ['mysql', 'sys', 'performance_schema', 'information_schema'])) {
+                    throw new \Exception('Catalog is not empty');
+                }
+            }
+
             // drop mysql, sys and performance_schema
             $this->connection->exec('DROP DATABASE IF EXISTS mysql');
             $this->connection->exec('DROP DATABASE IF EXISTS sys');
