@@ -151,7 +151,8 @@ class Catalog
     public function getPort(string $catName): int
     {
         // TODO: wait for the functionality to be implemented in the server.
-        return $this->dbPort ?? 0;
+        return ($this->dbPort ?? 0);
+
     }
 
 
