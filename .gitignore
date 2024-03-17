@@ -3,7 +3,7 @@ composer.lock
 .idea
 *.tar.gz
 *.zip
-
+*.code-workspace
 # Ignore *.sql except on the src/create_catalog_sql directory
 *.sql
 !src/create_catalog_sql/*.sql
