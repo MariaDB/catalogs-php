@@ -237,15 +237,28 @@ class Catalog
      *
      * @return void
      */
-    public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost='localhost'): void
-    {
+    public function createAdminUserForCatalog(
+        string $catalog,
+        string $userName,
+        string $password,
+        string $authHost='localhost'
+    ): void {
         $this->connection->exec("USE CATALOG {$catalog}");
         $this->connection->exec("USE mysql");
 
-        $this->connection = new \PDO("mysql:host={$this->dbHost};port={$this->dbPort};dbname={$catalog}.mysql", $this->dbUser, $this->dbPass, $this->dbOptions);
+        $this->connection = new \PDO(
+            "mysql:host={$this->dbHost};port={$this->dbPort};dbname={$catalog}.mysql",
+            $this->dbUser,
+            $this->dbPass,
+            $this->dbOptions
+        );
 
-        $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
-        $this->connection->prepare("GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;")->execute([$userName, $authHost, $password]);
+        $this->connection->prepare(
+            "CREATE USER ?@? IDENTIFIED BY ?;"
+        )->execute([$userName, $authHost, $password]);
+        $this->connection->prepare(
+            "GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;"
+        )->execute([$userName, $authHost, $password]);
 
     }
 
