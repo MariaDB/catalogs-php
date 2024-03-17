@@ -58,6 +58,7 @@ class Catalog{
             // Wesley: I commented out this and added a 'CREATE CATALOG IF NOT EXISTS' because we have to run this a second time, because of a MariaDB server segfault/crash the first time. See below.
             // throw new Exception('Catalog name already exists.');
         }
+        $root_privileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE user='{$this->dbUser}';");
 
         $scripts = [
             'src/create_catalog_sql/mysql_system_tables.sql',
@@ -115,6 +116,15 @@ class Catalog{
             );
 
             $this->connection->exec($content);
+
+
+            if ($root_privileges->rowCount() > 0)
+            {
+                foreach ($root_privileges as $privilege)
+                {
+                    $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$privilege['Host']}', '{$privilege['User']}', '{$privilege['Priv']}');");
+                }
+            }
         }
         // Basicly run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
@@ -181,7 +191,7 @@ class Catalog{
         $this->connection->exec("USE CATALOG {$catalog}");
         $this->connection->exec("USE mysql");
 
-        $this->connection->prepare("INSERT IGNORE INTO global_priv (Host,User,Priv) VALUES ('%','{$this->dbUser}','{\"access\":18446744073709551615}')")->execute([]);
+        //$this->connection->prepare("INSERT IGNORE INTO global_priv (Host,User,Priv) VALUES ('%','{$this->dbUser}','{\"access\":18446744073709551615}')")->execute([]);
 
         $this->connection = new \PDO("mysql:host={$this->server};port={$this->serverPort};dbname={$catalog}.mysql", $this->dbUser, $this->dbPass, $this->server_options);
 
