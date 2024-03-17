@@ -14,8 +14,6 @@ namespace Mariadb\CatalogsPHP;
  */
 class Exception extends \Exception
 {
-
-
     /**
      * Constructs the Exception.
      *
@@ -29,11 +27,8 @@ class Exception extends \Exception
      * @param int             $code     The Exception code (optional).
      * @param \Throwable|null $previous The previous throwable used for exception chaining (optional).
      */
-    public function __construct($message, $code=0, \Throwable $previous=null)
+    public function __construct($message, $code = 0, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-
     }
-
-
 }

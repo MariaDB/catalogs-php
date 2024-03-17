@@ -11,7 +11,6 @@ use PDOException;
  */
 class Catalog
 {
-
     /**
      * The connection to the MariaDB server.
      *
@@ -43,12 +42,12 @@ class Catalog
      * @throws Exception    If a general error occurs during instantiation.
      */
     public function __construct(
-        protected string $dbHost='localhost',
-        protected int $dbPort=3306,
-        protected string $dbUser='root',
-        protected string $dbPass='',
-        protected ?array $dbOptions=null,
-        protected ?\PDO $pdo=null
+        protected string $dbHost = 'localhost',
+        protected int $dbPort = 3306,
+        protected string $dbUser = 'root',
+        protected string $dbPass = '',
+        protected ?array $dbOptions = null,
+        protected ?\PDO $pdo = null
     ) {
         // Connect.
         try {
@@ -73,10 +72,9 @@ class Catalog
 
         if (version_compare($version, self::MINIMAL_MARIA_VERSION, '<') === true) {
             throw new Exception(
-                'The MariaDB version is too low. The minimal version is '.self::MINIMAL_MARIA_VERSION
+                'The MariaDB version is too low. The minimal version is ' . self::MINIMAL_MARIA_VERSION
             );
         }
-
     }
 
 
@@ -103,8 +101,8 @@ class Catalog
             'src/create_catalog_sql/maria_add_gis_sp.sql',
             'src/create_catalog_sql/mysql_sys_schema.sql',
         ];
-        $this->connection->exec('CREATE CATALOG IF NOT EXISTS '.$catName);
-        $this->connection->exec('USE CATALOG '.$catName);
+        $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' . $catName);
+        $this->connection->exec('USE CATALOG ' . $catName);
 
         $this->connection->exec('CREATE DATABASE IF NOT EXISTS mysql');
         $this->connection->exec('USE mysql');
@@ -137,7 +135,6 @@ class Catalog
         }
 
         return $this->getPort($catName);
-
     }
 
 
@@ -152,7 +149,6 @@ class Catalog
     {
         // TODO: wait for the functionality to be implemented in the server.
         return ($this->dbPort ?? 0);
-
     }
 
 
@@ -165,13 +161,13 @@ class Catalog
     {
         $catalogs = [];
         $results  = $this->connection->query('SHOW CATALOGS');
+
         foreach ($results as $row) {
             // For now, we just return the default port for all catalogs.
             $catalogs[$row['Catalog']] = $this->dbPort;
         }
 
         return $catalogs;
-
     }
 
 
@@ -189,7 +185,7 @@ class Catalog
     {
         try {
             // Enter the catalog.
-            $this->connection->exec('USE CATALOG '.$catName);
+            $this->connection->exec('USE CATALOG ' . $catName);
 
             // Check if there are any tables besides mysql, sys, performance_schema and information_schema.
             $tables = $this->connection->query('SHOW DATABASES');
@@ -205,13 +201,12 @@ class Catalog
             $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
 
             // Drop the catalog.
-            $this->connection->exec('DROP CATALOG '.$catName);
+            $this->connection->exec('DROP CATALOG ' . $catName);
         } catch (\PDOException $e) {
-            throw new \Exception('Error dropping catalog: '.$e->getMessage());
+            throw new \Exception('Error dropping catalog: ' . $e->getMessage());
         }
 
         return true;
-
     }
 
 
@@ -225,7 +220,6 @@ class Catalog
     {
         // PHPCS:ignore
         // TODO implement the ALTER CATALOG command.
-
     }
 
 
@@ -243,7 +237,7 @@ class Catalog
         string $catalog,
         string $userName,
         string $password,
-        string $authHost='localhost'
+        string $authHost = 'localhost'
     ): void {
         $this->connection->exec("USE CATALOG {$catalog}");
         $this->connection->exec("USE mysql");
@@ -262,8 +256,5 @@ class Catalog
         $this->connection->prepare(
             "GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;"
         )->execute([$userName, $authHost, $password]);
-
     }
-
-
 }
