@@ -116,14 +116,6 @@ class Catalog{
 
             $this->connection->exec($content);
         }
-
-        // The problem is that this one will segfault the server the first time it is run.
-        // After server has restarted, it will work...
-        $this->connection->exec("CREATE USER 'test'@'%' IDENTIFIED BY 'test';");
-        $this->connection->exec("GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' IDENTIFIED BY 'test' WITH GRANT OPTION;");
-
-        $this->connection->exec('CREATE DATABASE testdb;');
-
         // Basicly run:
         // mariadb-install-db --catalogs="list" --catalog-user=user --catalog-password[=password] --catalog-client-arg=arg
 
@@ -179,5 +171,16 @@ class Catalog{
 
     public function alter() {
         // Out of scope
+    }
+
+    /**
+     * @return void
+     */
+    public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost = 'localhost'): void
+    {
+
+        $this->connection->prepare("USE CATALOG ". $catalog);
+        $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
+        $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? WITH GRANT OPTION;")->execute([$userName, $authHost]);
     }
 }

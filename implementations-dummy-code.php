@@ -10,7 +10,8 @@ use Mariadb\CatalogsPHP\Catalog;
 
 // Creating a new catalog
 $cat =  new Catalog( "127.0.0.1", 3306, 'root', 'rootpassword');
-$catPort = $cat->create( 'catalog20' );
+$catPort = $cat->create( 'catalog23' );
+$cat->createAdminUserForCatalog( 'catalog23', 'admin', 'adminpassword' );
 
 //var_dump($cat->show());
 // Using PDO, Create a DB and user in the collection using the $catPort.
