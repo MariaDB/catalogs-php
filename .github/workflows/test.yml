@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    name: Check code style and run tests
+    name: Check code style
 
     steps:
       - name: Checkout code
