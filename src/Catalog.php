@@ -51,7 +51,7 @@ class Catalog{
      * @param array|null $args
      * @return int
      */
-    public function create( string $catName, string $catUser = null, string $catPassword=null, array $args=null): int{
+    public function create(string $catName): int{
         // Might be restricted by the server.
         // Check if the Catalog name is valid.
         if (in_array($catName, array_keys($this->show()))) {
@@ -180,7 +180,14 @@ class Catalog{
     {
 
         $this->connection->prepare("USE CATALOG ". $catalog);
-        $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
+        try {
+            $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
+        }
+        catch (\PDOException $e) {
+            echo "Caught exception: " . $e->getMessage() . "\n";
+            // Sometimes, the server goes away for a few seconds (bug in mariadb)
+            sleep(10);
+        }
         $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? WITH GRANT OPTION;")->execute([$userName, $authHost]);
     }
 }
