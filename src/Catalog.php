@@ -88,7 +88,7 @@ class Catalog
             throw new Exception('Catalog name already exists.');
         }
 
-        $root_privileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
+        $rootPrivileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
 
         $scripts = [
             'src/create_catalog_sql/mysql_system_tables.sql',
@@ -121,9 +121,12 @@ class Catalog
             $this->connection->exec($content);
         }
 
-        if ($root_privileges->rowCount() > 0) {
-            foreach ($root_privileges as $privilege) {
-                $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$privilege['Host']}', '{$privilege['User']}', '{$privilege['Priv']}');");
+        if ($rootPrivileges->rowCount() > 0) {
+            foreach ($rootPrivileges as $privilege) {
+                $host = $privilege['Host'];
+                $user = $privilege['User'];
+                $priv = $privilege['Priv'];
+                $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$host}', '{$user}', '{$priv}');");
             }
         }
 
@@ -203,7 +206,7 @@ class Catalog
             $this->connection->exec('DROP CATALOG '.$catName);
         } catch (\PDOException $e) {
             throw new \Exception('Error dropping catalog: '.$e->getMessage());
-        }//end try
+        }
 
         return true;
 
