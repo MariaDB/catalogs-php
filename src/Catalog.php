@@ -7,8 +7,8 @@ namespace Mariadb\CatalogsPHP;
  *
  * @package Mariadb\CatalogsPHP
  */
-class Catalog{
-
+class Catalog
+{
     /**
      * The connection to the MariaDB server.
      *
@@ -19,29 +19,39 @@ class Catalog{
     public const MINIMAL_MARIA_VERSION = '11.0.3'; // This is too low, because this is a beta version we are developing for.
 
     /**
-     * Class constructor
+     * Class constructor.
      *
-     * @param string $server         server
-     * @param int    $serverPort     port
-     * @param string $dbUser         user
-     * @param string $dbPass         password
-     * @param array  $server_options options
+     * Initializes a new instance of the class with database connection
+     * details. Allows for specification of the server, server port,
+     * database user, and password, as well as additional options for
+     * the server.
+     * Default values are provided to simplify instantiation for common scenarios.
      *
-     * @return void
+     * @param string     $db_host    The hostname or IP address of the database server. Default is 'localhost'.
+     * @param int        $db_port    The TCP/IP port of the database server. Default is 3306.
+     * @param string     $db_user    The username for the database login. Default is 'root'.
+     * @param string     $db_pass    The password for the database login. Default is an empty string.
+     * @param array|null $db_options Optional. An array of options for the server connection.
      *
-     * @throws PDOException
-     * @throws Exception
+     * @throws PDOException If a PDO error occurs during the connection attempt.
+     * @throws Exception    If a general error occurs during instantiation.
      */
-    public function __construct(protected $server = 'localhost', protected $serverPort = 3306, protected $dbUser = 'root', protected $dbPass = '', protected $server_options = null)
-    {
+    public function __construct(
+        protected string $db_host = 'localhost',
+        protected int $db_port = 3306,
+        protected string $db_user = 'root',
+        protected string $db_pass = '',
+        protected ?array $db_options = null
+    ) {
         // Connect.
         try {
-            $this->connection = new \PDO("mysql:host=$server;port=$serverPort", $dbUser, $dbPass, $server_options);
+            // Corrected to use the updated parameter names.
+            $this->connection = new \PDO("mysql:host=$db_host;port=$db_port", $db_user, $db_pass, $db_options);
         } catch (\PDOException $e) {
             throw $e;
         }
 
-        // Check the maria DB version.
+        // Check the MariaDB version.
         $version_query = $this->connection->query('SELECT VERSION()');
         $version = $version_query->fetchColumn();
 
@@ -103,7 +113,7 @@ class Catalog{
         $results = $this->connection->query('SHOW CATALOGS');
         foreach ($results as $row) {
             // For now, we just return the default port for all catalogs.
-            $catalogs[$row['name']] = $this->serverPort;
+            $catalogs[$row['name']] = $this->db_port;
         }
         return $catalogs;
     }
@@ -130,10 +140,11 @@ class Catalog{
     /**
      * This is out of scope, that's why it's private.
      * And it should be made public when implemented.
-     * 
-     * @return void 
+     *
+     * @return void
      */
-    private function alter() {
+    private function alter()
+    {
         // TODO implement the ALTER CATALOG command.
     }
 }
