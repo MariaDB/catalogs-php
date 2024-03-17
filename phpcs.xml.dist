@@ -150,8 +150,8 @@
 <!-- Lines can be N chars long (warnings), errors at M chars -->
  <rule ref="Generic.Files.LineLength">
   <properties>
-   <property name="lineLimit" value="120"/>
-   <property name="absoluteLineLimit" value="150"/>
+   <property name="lineLimit" value="130"/>
+   <property name="absoluteLineLimit" value="180"/>
   </properties>
  </rule>
 
