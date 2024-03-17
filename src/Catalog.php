@@ -263,7 +263,7 @@ class Catalog
         $this->connection->prepare(
             "CREATE USER ?@? IDENTIFIED BY ?;"
         )->execute([$userName, $authHost, $password]);
-        
+
         $this->connection->prepare(
             "GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;"
         )->execute([$userName, $authHost, $password]);
