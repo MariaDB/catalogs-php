@@ -48,7 +48,7 @@ class Catalog
         protected string $dbUser='root',
         protected string $dbPass='',
         protected ?array $dbOptions=null,
-        protected ?\PDO $pdo = null
+        protected ?\PDO $pdo=null
     ) {
         // Connect.
         try {
@@ -79,6 +79,7 @@ class Catalog
 
     }
 
+
     /**
      * Create a new catalog
      *
@@ -89,7 +90,7 @@ class Catalog
     public function create(string $catName): int
     {
         // Check if the Catalog name is valid.
-        if (in_array($catName, array_keys($this->show())) === true) {
+        if (in_array($catName, array_keys($this->list())) === true) {
             throw new Exception('Catalog name already exists.');
         }
 
@@ -160,7 +161,7 @@ class Catalog
      *
      * @return int[] Named array with cat name and port.
      */
-    public function show(): array
+    public function list(): array
     {
         $catalogs = [];
         $results  = $this->connection->query('SHOW CATALOGS');
@@ -261,6 +262,7 @@ class Catalog
         $this->connection->prepare(
             "CREATE USER ?@? IDENTIFIED BY ?;"
         )->execute([$userName, $authHost, $password]);
+
         $this->connection->prepare(
             "GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;"
         )->execute([$userName, $authHost, $password]);

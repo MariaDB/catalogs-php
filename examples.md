@@ -17,7 +17,7 @@ $catalog->create('catalog_name');
 ## Return a list of all existing catalogs
 
 ```php
-$catalogs = $catalog->show();
+$catalogs = $catalog->list();
 /*
 Returns an array of catalogs on MariaDB:
 Array
