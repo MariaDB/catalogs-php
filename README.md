@@ -17,6 +17,10 @@ Include autoloader in your project.
 <?php require_once('vendor/autoload.php');
 ```
 
+# Examples
+
+You can check some usage examples on [Examples](examples.md)
+
 # Contributing
 We welcome contributions! Please see our contribution guidelines for details on how to submit pull requests, report issues, or suggest improvements.
 
