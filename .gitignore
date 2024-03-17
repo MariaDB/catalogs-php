@@ -1,6 +1,9 @@
 /vendor/
 composer.lock
 .idea
-*.sql
 *.tar.gz
 *.zip
+
+# Ignore *.sql except on the src/create_catalog_sql directory
+*.sql
+!src/create_catalog_sql/*.sql
