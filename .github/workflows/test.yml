@@ -1,0 +1,28 @@
+name: test
+
+on: [push]
+
+concurrency: production_environment
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    name: Check code style
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Install PHP dependencies (composer)
+        run: composer install
+
+      - name: Check code style
+        run: composer phpcs
