@@ -18,4 +18,8 @@ class PDOStatementMock extends PDOStatement implements IteratorAggregate
         return new ArrayIterator($this->data);
     }
 
+    public function rowCount(): int
+    {
+        return count($this->data);
+    }
 }
