@@ -22,6 +22,7 @@ class Catalog
     // This is too low, because this is a beta version we are developing for.
     public const MINIMAL_MARIA_VERSION = '11.0.2';
 
+
     /**
      * Class constructor.
      *
@@ -76,7 +77,7 @@ class Catalog
     /**
      * Create a new catalog
      *
-     * @param string      $catName     The new Catalog name.
+     * @param string $catName The new Catalog name.
      *
      * @return int
      */
@@ -87,7 +88,7 @@ class Catalog
             throw new Exception('Catalog name already exists.');
         }
 
-        $root_privileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
+        $rootPrivileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
 
         $scripts = [
             'src/create_catalog_sql/mysql_system_tables.sql',
@@ -96,8 +97,8 @@ class Catalog
             'src/create_catalog_sql/maria_add_gis_sp.sql',
             'src/create_catalog_sql/mysql_sys_schema.sql',
         ];
-        $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' .$catName);
-        $this->connection->exec('USE CATALOG ' . $catName);
+        $this->connection->exec('CREATE CATALOG IF NOT EXISTS '.$catName);
+        $this->connection->exec('USE CATALOG '.$catName);
 
         $this->connection->exec('CREATE DATABASE IF NOT EXISTS mysql');
         $this->connection->exec('USE mysql');
@@ -120,13 +121,17 @@ class Catalog
             $this->connection->exec($content);
         }
 
-        if ($root_privileges->rowCount() > 0) {
-            foreach ($root_privileges as $privilege) {
-                $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$privilege['Host']}', '{$privilege['User']}', '{$privilege['Priv']}');");
+        if ($rootPrivileges->rowCount() > 0) {
+            foreach ($rootPrivileges as $privilege) {
+                $host = $privilege['Host'];
+                $user = $privilege['User'];
+                $priv = $privilege['Priv'];
+                $this->connection->exec("INSERT INTO mysql.global_priv VALUES ('{$host}', '{$user}', '{$priv}');");
             }
         }
 
         return $this->getPort($catName);
+
     }
 
 
@@ -181,10 +186,10 @@ class Catalog
         );
 
         try {
-            // enter the catalog
-            $this->connection->exec('USE CATALOG ' . $catName);
+            // Enter the catalog.
+            $this->connection->exec('USE CATALOG '.$catName);
 
-            // check if there are any tables besides mysql, sys, performance_schema and information_schema
+            // Check if there are any tables besides mysql, sys, performance_schema and information_schema.
             $tables = $this->connection->query('SHOW DATABASES');
             foreach ($tables as $table) {
                 if (!in_array($table['Database'], ['mysql', 'sys', 'performance_schema', 'information_schema'])) {
@@ -192,15 +197,15 @@ class Catalog
                 }
             }
 
-            // drop mysql, sys and performance_schema
+            // Drop mysql, sys and performance_schema.
             $this->connection->exec('DROP DATABASE IF EXISTS mysql');
             $this->connection->exec('DROP DATABASE IF EXISTS sys');
             $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
 
-            // drop the catalog
-            $this->connection->exec('DROP CATALOG ' . $catName);
+            // Drop the catalog.
+            $this->connection->exec('DROP CATALOG '.$catName);
         } catch (\PDOException $e) {
-            throw new \Exception('Error dropping catalog: ' . $e->getMessage());
+            throw new \Exception('Error dropping catalog: '.$e->getMessage());
         }
 
         return true;
@@ -221,10 +226,11 @@ class Catalog
 
     }
 
+
     /**
      * @return void
      */
-    public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost = 'localhost'): void
+    public function createAdminUserForCatalog(string $catalog, string $userName, string $password, string $authHost='localhost'): void
     {
         $this->connection->exec("USE CATALOG {$catalog}");
         $this->connection->exec("USE mysql");
@@ -232,6 +238,9 @@ class Catalog
         $this->connection = new \PDO("mysql:host={$this->dbHost};port={$this->dbPort};dbname={$catalog}.mysql", $this->dbUser, $this->dbPass, $this->dbOptions);
 
         $this->connection->prepare("CREATE USER ?@? IDENTIFIED BY ?;")->execute([$userName, $authHost, $password]);
-        $this->connection->prepare("GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;")->execute([$userName, $authHost,$password]);
+        $this->connection->prepare("GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;")->execute([$userName, $authHost, $password]);
+
     }
+
+
 }
