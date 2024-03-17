@@ -48,14 +48,15 @@ class Catalog
         protected string $dbUser='root',
         protected string $dbPass='',
         protected ?array $dbOptions=null,
-        protected ?\PDO $pdo = null
+        protected ?\PDO $pdo=null
     ) {
         // Connect.
         try {
-            if($pdo !== null) {
+            if ($pdo !== null) {
                 $this->connection = $pdo;
                 return;
             }
+
             // Corrected to use the updated parameter names.
             $this->connection = new \PDO(
                 "mysql:host=$dbHost;port=$dbPort",
@@ -78,6 +79,7 @@ class Catalog
         }
 
     }
+
 
     /**
      * Create a new catalog
