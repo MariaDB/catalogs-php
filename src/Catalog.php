@@ -186,10 +186,6 @@ class Catalog
      */
     public function drop(string $catName): bool
     {
-        $this->connection->query(
-            'DROP CATALOG '.$this->connection->quote($catName)
-        );
-
         try {
             // Enter the catalog.
             $this->connection->exec('USE CATALOG '.$catName);
