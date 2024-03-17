@@ -16,4 +16,3 @@ $cat->createAdminUserForCatalog( 'catalog46', 'admin', 'adminpassword', '%' );
 //var_dump($cat->show());
 // Using PDO, Create a DB and user in the collection using the $catPort.
 // Set DB_NAME with the "name:$catPort"
-
