@@ -5,13 +5,18 @@ A PHP framework to talk to Catalogs. Part of the [CloudFest 2024 Hackathon](http
 
 Include the catalog-php with composer:
 
-    ```bash
-    composer require mariadb/catalogs-php:dev-main
-    ```
+```bash
+composer require mariadb/catalogs-php:dev-main
+```
 
 Include autoloader in your project.
 
-    ```php
-    <?php require_once('vendor/autoload.php');
-    ```
+```php
+<?php require_once('vendor/autoload.php');
+```
 
+# Contributing
+We welcome contributions! Please see our contribution guidelines for details on how to submit pull requests, report issues, or suggest improvements.
+
+# License
+This project is licensed under the General Public License (GPLv3). See the LICENSE file for details.
