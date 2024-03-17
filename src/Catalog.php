@@ -196,6 +196,6 @@ class Catalog{
                 throw $e;
             }
         }
-        $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? WITH GRANT OPTION;")->execute([$userName, $authHost]);
+        $this->connection->prepare("GRANT ALL PRIVILEGES ON *.* TO ?@? IDENTIFIED BY  ? WITH GRANT OPTION;")->execute([$userName, $password, $authHost]);
     }
 }
