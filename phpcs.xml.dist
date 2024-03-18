@@ -14,6 +14,12 @@
     <!-- PSR12 based -->
     <rule ref="PSR12"/>
 
+    <rule ref="Squiz.Commenting.BlockComment"/>
+    <rule ref="Squiz.Commenting.DocCommentAlignment"/>
+    <rule ref="Squiz.Commenting.EmptyCatchComment"/>
+    <rule ref="Squiz.Commenting.PostStatementComment"/>
+    <rule ref="Squiz.Commenting.VariableComment"/>
+
     <!-- Lines can be N chars long (warnings), errors at M chars -->
     <rule ref="Generic.Files.LineLength">
         <properties>

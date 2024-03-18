@@ -12,7 +12,7 @@ namespace Mariadb\CatalogsPHP;
  *
  * @package Mariadb\CatalogsPHP
  */
-class Exception extends \Exception
+class CatalogManagerException extends \Exception
 {
     /**
      * Constructs the Exception.
