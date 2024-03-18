@@ -87,7 +87,7 @@ class CatalogManager
 
         // Check support for catalogs.
         if ($this->isCatalogSupported() === false) {
-            throw new Exception('The MariaDB server does not support catalogs.');
+            throw new CatalogManagerException('The MariaDB server does not support catalogs.');
         }
     }
 
