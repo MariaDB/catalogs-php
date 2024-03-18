@@ -18,6 +18,16 @@ class Catalog
      */
     private $connection;
 
+    // Prepared statements with the USE CATALOG command are not working as expected.
+    // This method is used to check the catalog name before using it in a query.
+    private function checkCatalogName($catalogName): void
+    {
+        if (preg_match('/[^a-zA-Z0-9_]/', $catalogName) === 1)
+        {
+            throw new Exception('Invalid catalog name');
+        }
+    }
+
     // This is too low, because this is a beta version we are developing for.
     public const MINIMAL_MARIA_VERSION = '11.0.2';
 
@@ -101,6 +111,7 @@ class Catalog
             __DIR__ . '/create_catalog_sql/maria_add_gis_sp.sql',
             __DIR__ . '/create_catalog_sql/mysql_sys_schema.sql',
         ];
+        $this->checkCatalogName($catName);
         $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' . $catName);
         $this->connection->exec('USE CATALOG ' . $catName);
 
@@ -185,13 +196,14 @@ class Catalog
     {
         try {
             // Enter the catalog.
+            $this->checkCatalogName($catName);
             $this->connection->exec('USE CATALOG ' . $catName);
 
             // Check if there are any tables besides mysql, sys, performance_schema and information_schema.
             $tables = $this->connection->query('SHOW DATABASES');
             foreach ($tables as $table) {
                 if (in_array($table['Database'], ['mysql', 'sys', 'performance_schema', 'information_schema']) === false) {
-                    throw new \Exception('Catalog is not empty');
+                    throw new Exception('Catalog is not empty');
                 }
             }
 
@@ -201,9 +213,9 @@ class Catalog
             $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
 
             // Drop the catalog.
-            $this->connection->exec('DROP CATALOG ' . $catName);
+            $this->connection->exec('DROP CATALOG '. $catName);
         } catch (\PDOException $e) {
-            throw new \Exception('Error dropping catalog: ' . $e->getMessage());
+            throw new Exception('Error dropping catalog: ' . $e->getMessage());
         }
 
         return true;
@@ -239,6 +251,7 @@ class Catalog
         string $password,
         string $authHost = 'localhost'
     ): void {
+        $this->checkCatalogName($catalog);
         $this->connection->exec("USE CATALOG {$catalog}");
         $this->connection->exec("USE mysql");
 
