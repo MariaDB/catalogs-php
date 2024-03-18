@@ -9,7 +9,7 @@ use PDOException;
  *
  * @package Mariadb\CatalogsPHP
  */
-class Catalog
+class CatalogManager
 {
     /**
      * The connection to the MariaDB server.
@@ -23,7 +23,7 @@ class Catalog
     private function checkCatalogName($catalogName): void
     {
         if (preg_match('/[^a-zA-Z0-9_]/', $catalogName) === 1) {
-            throw new Exception('Invalid catalog name');
+            throw new CatalogManagerException('Invalid catalog name');
         }
     }
 
@@ -48,7 +48,7 @@ class Catalog
      * @param \PDO|null  $pdo       Optional. An existing PDO connection to use. Default is null.
      *
      * @throws PDOException If a PDO error occurs during the connection attempt.
-     * @throws Exception    If a general error occurs during instantiation.
+     * @throws CatalogManagerException    If a general error occurs during instantiation.
      */
     public function __construct(
         protected string $dbHost = 'localhost',
@@ -80,9 +80,14 @@ class Catalog
         $version      = $versionQuery->fetchColumn();
 
         if (version_compare($version, self::MINIMAL_MARIA_VERSION, '<') === true) {
-            throw new Exception(
+            throw new CatalogManagerException(
                 'The MariaDB version is too low. The minimal version is ' . self::MINIMAL_MARIA_VERSION
             );
+        }
+
+        // Check support for catalogs.
+        if ($this->isCatalogSupported() === false) {
+            throw new CatalogManagerException('The MariaDB server does not support catalogs.');
         }
     }
 
@@ -90,15 +95,15 @@ class Catalog
     /**
      * Create a new catalog
      *
-     * @param string $catName The new Catalog name.
+     * @param string $catalogName The new Catalog name.
      *
      * @return int
      */
-    public function create(string $catName): int
+    public function create(string $catalogName): int
     {
         // Check if the Catalog name is valid.
-        if (in_array($catName, array_keys($this->list())) === true) {
-            throw new Exception('Catalog name already exists.');
+        if (in_array($catalogName, array_keys($this->list())) === true) {
+            throw new CatalogManagerException('Catalog name already exists.');
         }
 
         $rootPrivileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
@@ -110,9 +115,9 @@ class Catalog
             __DIR__ . '/create_catalog_sql/maria_add_gis_sp.sql',
             __DIR__ . '/create_catalog_sql/mysql_sys_schema.sql',
         ];
-        $this->checkCatalogName($catName);
-        $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' . $catName);
-        $this->connection->exec('USE CATALOG ' . $catName);
+        $this->checkCatalogName($catalogName);
+        $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' . $catalogName);
+        $this->connection->exec('USE CATALOG ' . $catalogName);
 
         $this->connection->exec('CREATE DATABASE IF NOT EXISTS mysql');
         $this->connection->exec('USE mysql');
@@ -144,18 +149,18 @@ class Catalog
             }
         }
 
-        return $this->getPort($catName);
+        return $this->getPort($catalogName);
     }
 
 
     /**
      * Get the port of a catalog.
      *
-     * @param string $catName The catalog name.
+     * @param string $catalogName The catalog name.
      *
      * @return int
      */
-    public function getPort(string $catName): int
+    public function getPort(string $catalogName): int
     {
         // TODO: wait for the functionality to be implemented in the server.
         return ($this->dbPort ?? 0);
@@ -184,25 +189,25 @@ class Catalog
     /**
      * Drop a catalog.
      *
-     * @param string $catName The catalog name.
+     * @param string $catalogName The catalog name.
      *
      * @return void
      *
      * @throws PDOException If a PDO error occurs during the catalog drop attempt.
-     * @throws Exception    If a general error occurs during catalog drop.
+     * @throws CatalogManagerException    If a general error occurs during catalog drop.
      */
-    public function drop(string $catName): bool
+    public function drop(string $catalogName): bool
     {
         try {
             // Enter the catalog.
-            $this->checkCatalogName($catName);
-            $this->connection->exec('USE CATALOG ' . $catName);
+            $this->checkCatalogName($catalogName);
+            $this->connection->exec('USE CATALOG ' . $catalogName);
 
             // Check if there are any tables besides mysql, sys, performance_schema and information_schema.
             $tables = $this->connection->query('SHOW DATABASES');
             foreach ($tables as $table) {
                 if (in_array($table['Database'], ['mysql', 'sys', 'performance_schema', 'information_schema']) === false) {
-                    throw new Exception('Catalog is not empty');
+                    throw new CatalogManagerException('Catalog is not empty');
                 }
             }
 
@@ -212,9 +217,9 @@ class Catalog
             $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
 
             // Drop the catalog.
-            $this->connection->exec('DROP CATALOG ' . $catName);
+            $this->connection->exec('DROP CATALOG ' . $catalogName);
         } catch (\PDOException $e) {
-            throw new Exception('Error dropping catalog: ' . $e->getMessage());
+            throw new CatalogManagerException('Error dropping catalog: ' . $e->getMessage());
         }
 
         return true;
@@ -237,7 +242,7 @@ class Catalog
     /**
      * Create admin user for a catalog
      *
-     * @param string $catalog  The catalog name
+     * @param string $catalogName  The catalog name
      * @param string $userName The user name
      * @param string $password The user password
      * @param string $authHost The database host
@@ -245,17 +250,17 @@ class Catalog
      * @return void
      */
     public function createAdminUserForCatalog(
-        string $catalog,
+        string $catalogName,
         string $userName,
         string $password,
         string $authHost = 'localhost'
     ): void {
-        $this->checkCatalogName($catalog);
-        $this->connection->exec("USE CATALOG {$catalog}");
+        $this->checkCatalogName($catalogName);
+        $this->connection->exec("USE CATALOG {$catalogName}");
         $this->connection->exec("USE mysql");
 
         $this->connection = new \PDO(
-            "mysql:host={$this->dbHost};port={$this->dbPort};dbname={$catalog}.mysql",
+            "mysql:host={$this->dbHost};port={$this->dbPort};dbname={$catalogName}.mysql",
             $this->dbUser,
             $this->dbPass,
             $this->dbOptions
@@ -268,5 +273,13 @@ class Catalog
         $this->connection->prepare(
             "GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;"
         )->execute([$userName, $authHost, $password]);
+    }
+
+    public function isCatalogSupported(): bool
+    {
+        $query   = $this->connection->query("SHOW GLOBAL VARIABLES LIKE 'CATALOGS';");
+        $enabled = $query->fetchObject()?->Value ?? 'OFF';
+
+        return strtoupper($enabled) === 'ON';
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Mariadb\CatalogsPHP\Tests;
 
-use Mariadb\CatalogsPHP\Catalog;
+use Mariadb\CatalogsPHP\CatalogManager;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 class CatalogTest extends TestCase
 {
     /**
-     * @var Catalog $catalog The Catalog instance to test
+     * @var CatalogManager $catalog The Catalog instance to test
      */
     private $catalog;
 
@@ -31,7 +31,7 @@ class CatalogTest extends TestCase
         $this->pdoMock = $this->createMock(\PDO::class);
 
         // Inject the PDO mock into your Catalog class
-        $this->catalog = new Catalog('localhost', 3306, 'root', '', null, $this->pdoMock);
+        $this->catalog = new CatalogManager('localhost', 3306, 'root', '', null, $this->pdoMock);
     }
 
     /**
