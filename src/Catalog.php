@@ -22,8 +22,7 @@ class Catalog
     // This method is used to check the catalog name before using it in a query.
     private function checkCatalogName($catalogName): void
     {
-        if (preg_match('/[^a-zA-Z0-9_]/', $catalogName) === 1)
-        {
+        if (preg_match('/[^a-zA-Z0-9_]/', $catalogName) === 1) {
             throw new Exception('Invalid catalog name');
         }
     }
@@ -213,7 +212,7 @@ class Catalog
             $this->connection->exec('DROP DATABASE IF EXISTS performance_schema');
 
             // Drop the catalog.
-            $this->connection->exec('DROP CATALOG '. $catName);
+            $this->connection->exec('DROP CATALOG ' . $catName);
         } catch (\PDOException $e) {
             throw new Exception('Error dropping catalog: ' . $e->getMessage());
         }
