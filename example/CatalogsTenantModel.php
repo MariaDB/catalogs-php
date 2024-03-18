@@ -3,7 +3,7 @@
 namespace App\Models\Tenant;
 
 use Spatie\Multitenancy\Models\Tenant;
-use Mariadb\CatalogsPHP\Catalog;
+use Mariadb\CatalogsPHP\CatalogManager;
 /**
  * Class CatalogsTenantModel
  * @package App\Models\Tenant
@@ -21,7 +21,7 @@ class CatalogsTenantModel extends Tenant
     public function createCatalogs()
     {
         if (self::$catalog === null) {
-            self::$catalog = new Catalog('localhost', 3306, 'root', 'rootPassword');
+            self::$catalog = new CatalogManager('localhost', 3306, 'root', 'rootPassword');
         }
         
         self::$catalog->create('test01');
