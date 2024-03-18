@@ -95,11 +95,11 @@ class Catalog
         $rootPrivileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
 
         $scripts = [
-            'src/create_catalog_sql/mysql_system_tables.sql',
-            'src/create_catalog_sql/mysql_performance_tables.sql',
-            'src/create_catalog_sql/mysql_system_tables_data.sql',
-            'src/create_catalog_sql/maria_add_gis_sp.sql',
-            'src/create_catalog_sql/mysql_sys_schema.sql',
+            __DIR__ . '/create_catalog_sql/mysql_system_tables.sql',
+            __DIR__ . '/create_catalog_sql/mysql_performance_tables.sql',
+            __DIR__ . '/create_catalog_sql/mysql_system_tables_data.sql',
+            __DIR__ . '/create_catalog_sql/maria_add_gis_sp.sql',
+            __DIR__ . '/create_catalog_sql/mysql_sys_schema.sql',
         ];
         $this->connection->exec('CREATE CATALOG IF NOT EXISTS ' . $catName);
         $this->connection->exec('USE CATALOG ' . $catName);
