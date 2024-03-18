@@ -75,6 +75,11 @@ class Catalog
                 'The MariaDB version is too low. The minimal version is ' . self::MINIMAL_MARIA_VERSION
             );
         }
+
+        // Check support for catalogs.
+        if ($this->isCatalogSupported() === false) {
+            throw new Exception('The MariaDB server does not support catalogs.');
+        }
     }
 
 
@@ -256,5 +261,13 @@ class Catalog
         $this->connection->prepare(
             "GRANT ALL PRIVILEGES ON `%`.* TO ?@? IDENTIFIED BY ? WITH GRANT OPTION;"
         )->execute([$userName, $authHost, $password]);
+    }
+
+    public function isCatalogSupported(): bool
+    {
+        $query   = $this->connection->query("SHOW GLOBAL VARIABLES LIKE 'CATALOGS';");
+        $enabled = $query->fetchObject()?->Value ?? 'OFF';
+
+        return strtoupper($enabled) === 'ON';
     }
 }
