@@ -9,7 +9,7 @@ use PDOException;
  *
  * @package Mariadb\CatalogsPHP
  */
-class Catalog
+class CatalogManager
 {
     /**
      * The connection to the MariaDB server.
@@ -23,7 +23,7 @@ class Catalog
     private function checkCatalogName($catalogName): void
     {
         if (preg_match('/[^a-zA-Z0-9_]/', $catalogName) === 1) {
-            throw new Exception('Invalid catalog name');
+            throw new CatalogManagerException('Invalid catalog name');
         }
     }
 
@@ -48,7 +48,7 @@ class Catalog
      * @param \PDO|null  $pdo       Optional. An existing PDO connection to use. Default is null.
      *
      * @throws PDOException If a PDO error occurs during the connection attempt.
-     * @throws Exception    If a general error occurs during instantiation.
+     * @throws CatalogManagerException    If a general error occurs during instantiation.
      */
     public function __construct(
         protected string $dbHost = 'localhost',
@@ -80,7 +80,7 @@ class Catalog
         $version      = $versionQuery->fetchColumn();
 
         if (version_compare($version, self::MINIMAL_MARIA_VERSION, '<') === true) {
-            throw new Exception(
+            throw new CatalogManagerException(
                 'The MariaDB version is too low. The minimal version is ' . self::MINIMAL_MARIA_VERSION
             );
         }
@@ -98,7 +98,7 @@ class Catalog
     {
         // Check if the Catalog name is valid.
         if (in_array($catalogName, array_keys($this->list())) === true) {
-            throw new Exception('Catalog name already exists.');
+            throw new CatalogManagerException('Catalog name already exists.');
         }
 
         $rootPrivileges = $this->connection->query("SELECT * FROM mysql.global_priv WHERE User='{$this->dbUser}' AND Host='%';");
@@ -189,7 +189,7 @@ class Catalog
      * @return void
      *
      * @throws PDOException If a PDO error occurs during the catalog drop attempt.
-     * @throws Exception    If a general error occurs during catalog drop.
+     * @throws CatalogManagerException    If a general error occurs during catalog drop.
      */
     public function drop(string $catalogName): bool
     {
@@ -202,7 +202,7 @@ class Catalog
             $tables = $this->connection->query('SHOW DATABASES');
             foreach ($tables as $table) {
                 if (in_array($table['Database'], ['mysql', 'sys', 'performance_schema', 'information_schema']) === false) {
-                    throw new Exception('Catalog is not empty');
+                    throw new CatalogManagerException('Catalog is not empty');
                 }
             }
 
@@ -214,7 +214,7 @@ class Catalog
             // Drop the catalog.
             $this->connection->exec('DROP CATALOG ' . $catalogName);
         } catch (\PDOException $e) {
-            throw new Exception('Error dropping catalog: ' . $e->getMessage());
+            throw new CatalogManagerException('Error dropping catalog: ' . $e->getMessage());
         }
 
         return true;
